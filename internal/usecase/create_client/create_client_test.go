@@ -33,7 +33,7 @@ func TestCreateClientUseCase_Execute(t *testing.T) {
 	})
 
 	assert.Nil(t, err)
-	assert.NotNil(t, output.ID)
+	assert.NotNil(t, output)
 	assert.NotEmpty(t, output.ID)
 	assert.Equal(t, "John Doe", output.Name)
 	assert.Equal(t, "john@doe.com", output.Email)
