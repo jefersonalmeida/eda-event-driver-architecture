@@ -19,11 +19,8 @@ func (s *ClientDBTestSuite) SetupSuite() {
 	s.Nil(err)
 
 	s.db = db
+	db.Exec("create table clients (id varchar(255), name varchar(255), email varchar(255), created_at date, updated_at date)")
 
-	_, err = db.Exec("create table clients (id varchar(255), name varchar(255), email varchar(255), created_at date, updated_at date)")
-	if err != nil {
-		return
-	}
 	s.clientDB = NewClientDB(db)
 }
 

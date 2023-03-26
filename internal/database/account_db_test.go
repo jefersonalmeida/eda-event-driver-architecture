@@ -20,38 +20,18 @@ func (s *AccountDBTestSuite) SetupSuite() {
 	s.Nil(err)
 
 	s.db = db
+	db.Exec("create table clients (id varchar(255), name varchar(255), email varchar(255), created_at date, updated_at date)")
+	db.Exec("create table accounts (id varchar(255), client_id varchar(255), balance float, created_at date, updated_at date)")
 
-	_, err = db.Exec("create table clients (id varchar(255), name varchar(255), email varchar(255), created_at date, updated_at date)")
-	if err != nil {
-		return
-	}
-
-	_, err = db.Exec("create table accounts (id varchar(255), client_id varchar(255), balance float, created_at date, updated_at date)")
-	if err != nil {
-		return
-	}
 	s.accountDB = NewAccountDB(db)
 
 	s.client, _ = entity.NewClient("John Doe", "john@doe.com")
 }
 
 func (s *AccountDBTestSuite) TearDownSuite() {
-	defer func(db *sql.DB) {
-		err := db.Close()
-		if err != nil {
-
-		}
-	}(s.db)
-
-	_, err := s.db.Exec("drop table clients")
-	if err != nil {
-		return
-	}
-
-	_, err = s.db.Exec("drop table accounts")
-	if err != nil {
-		return
-	}
+	defer s.db.Close()
+	s.db.Exec("drop table clients")
+	s.db.Exec("drop table accounts")
 }
 
 func TestAccountDBTestSuite(t *testing.T) {
