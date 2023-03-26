@@ -4,31 +4,40 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	ckafka "github.com/confluentinc/confluent-kafka-go/kafka"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jefersonalmeida/go-wallet/internal/database"
 	"github.com/jefersonalmeida/go-wallet/internal/event"
+	"github.com/jefersonalmeida/go-wallet/internal/event/handler"
 	"github.com/jefersonalmeida/go-wallet/internal/usecase/create_account"
 	"github.com/jefersonalmeida/go-wallet/internal/usecase/create_client"
 	"github.com/jefersonalmeida/go-wallet/internal/usecase/create_transaction"
 	"github.com/jefersonalmeida/go-wallet/internal/web"
 	"github.com/jefersonalmeida/go-wallet/internal/web/webserver"
 	"github.com/jefersonalmeida/go-wallet/pkg/events"
+	"github.com/jefersonalmeida/go-wallet/pkg/kafka"
 	uow2 "github.com/jefersonalmeida/go-wallet/pkg/uow"
 )
 
 func main() {
 	db, err := sql.Open("mysql", fmt.Sprintf(
 		"%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local",
-		"root", "root", "localhost", "3306", "wallet_core",
+		"root", "root", "mysql", "3306", "wallet_core",
 	))
 	if err != nil {
 		panic(err)
 	}
 	defer db.Close()
 
+	configMap := ckafka.ConfigMap{
+		"bootstrap.servers": "kafka:29092",
+		"group.id":          "wallet",
+	}
+	kafkaProducer := kafka.NewKafkaProducer(&configMap)
+
 	eventDispatcher := events.NewEventDispatcher()
+	eventDispatcher.Register("TransactionCreated", handler.NewTransactionCreatedKafkaHandler(kafkaProducer))
 	transactionCreatedEvent := event.NewTransactionCreated()
-	//eventDispatcher.Register("TransactionCreated", handler)
 
 	clientDB := database.NewClientDB(db)
 	accountDB := database.NewAccountDB(db)
@@ -47,7 +56,7 @@ func main() {
 	createAccountUseCase := create_account.NewCreateAccountUseCase(accountDB, clientDB)
 	createTransactionUseCase := create_transaction.NewCreateTransactionUseCase(uow, eventDispatcher, transactionCreatedEvent)
 
-	server := webserver.NewWebServer(":3000")
+	server := webserver.NewWebServer(":8080")
 
 	clientHandler := web.NewClientHandler(*createClientUseCase)
 	accountHandler := web.NewAccountHandler(*createAccountUseCase)
