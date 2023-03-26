@@ -1,0 +1,27 @@
+### Create Client
+
+POST {{endpoint}}/clients
+Content-Type: application/json
+
+{
+  "name": "John Doe",
+  "email": "john@doe.com"
+}
+
+### Create Account
+POST {{endpoint}}/accounts
+Content-Type: application/json
+
+{
+  "client_id": "062c3a11-2086-43d1-9f68-3a01b4ec6686"
+}
+
+### Create Transaction
+POST {{endpoint}}/transactions
+Content-Type: application/json
+
+{
+  "account_id_from": "7633ff9d-117a-44e7-8b55-e2f80a5e9e8f",
+  "account_id_to": "eac24a64-9f9c-4f76-8106-b6e03b44b335",
+  "amount": 1000
+}

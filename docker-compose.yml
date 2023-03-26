@@ -1,0 +1,21 @@
+version: '3'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: wallet-core-mysql
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --innodb-use-native-aio=0
+    restart: on-failure
+    volumes:
+      - ./.docker/mysql/data:/var/lib/mysql
+    tty: true
+    ports:
+      - '3306:3306'
+    environment:
+      MYSQL_DATABASE: wallet_core
+      MYSQL_ROOT_PASSWORD: root
+    networks:
+      - wallet-core-network
+
+networks:
+  wallet-core-network:
